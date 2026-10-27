@@ -30,7 +30,8 @@ def add_10(
 ):
     var i = thread_idx.x
     # FILL ME IN (roughly 1 line)
-
+    output[i] = a[i] + 10
+    # 通过，报警告，后续要用 `unsafe_offset=`
 
 # ANCHOR_END: add_10
 
