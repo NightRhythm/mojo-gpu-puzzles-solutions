@@ -42,7 +42,28 @@ def dot_product[
 ) where (Engine.element_size == 1):
     var size = Int(size_dev)
     # FILL ME IN (roughly 13 lines)
-    ...
+    var shared = stack_allocation[dtype=dtype, address_space=.SHARED](
+        row_major[TPB]()
+    )
+
+    var global_i = block_dim.x * block_idx.x + thread_idx.x
+    var local_i = thread_idx.x
+
+    if global_i < size:
+        shared[local_i] = rebind[Scalar[dtype]](a[global_i] * b[global_i])
+    else:
+        shared[local_i] = 0.0
+    barrier()
+
+    var tmp = TPB
+    while (tmp > 1):
+        tmp /= 2
+        if local_i < tmp:
+            shared[local_i] += shared[local_i + tmp]
+        barrier()
+
+    if local_i == 0:
+        output[0] = rebind[output.ElementType](shared[0])
 
 
 # ANCHOR_END: dot_product
